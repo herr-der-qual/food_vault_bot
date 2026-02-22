@@ -1,20 +1,15 @@
-import json
-from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework.test import APITestCase
 
-from ...models.product import Product
 from ...models.category import Category
-from ...models.user import User
 from ...models.comment import Comment
+from ...models.product import Product
+from ...models.user import User
 
 
 class ProductCommentViewTestCase(APITestCase):
-    """Test cases for ProductCommentView API endpoints"""
-    
     def setUp(self):
-        """Set up test data"""
         self.category = Category.objects.create(name="Energy Drink")
         self.user = User.objects.create(telegram_id=123456789, username="testuser")
         self.product = Product.objects.create(
@@ -24,7 +19,6 @@ class ProductCommentViewTestCase(APITestCase):
         )
     
     def test_add_comment_success(self):
-        """Test successful comment creation"""
         data = {
             'product_id': self.product.id,
             'telegram_id': 123456789,
@@ -43,11 +37,9 @@ class ProductCommentViewTestCase(APITestCase):
         self.assertEqual(comment.user, self.user)
     
     def test_add_comment_missing_fields(self):
-        """Test comment creation with missing fields"""
         data = {
             'product_id': self.product.id,
             'telegram_id': 123456789
-            # Missing comment
         }
         
         url = reverse('product-comment')
@@ -56,7 +48,6 @@ class ProductCommentViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_add_comment_invalid_product(self):
-        """Test comment creation with invalid product ID"""
         data = {
             'product_id': 999,
             'telegram_id': 123456789,
@@ -69,7 +60,6 @@ class ProductCommentViewTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
     
     def test_add_comment_invalid_user(self):
-        """Test comment creation with invalid user"""
         data = {
             'product_id': self.product.id,
             'telegram_id': 999999999,
@@ -82,8 +72,6 @@ class ProductCommentViewTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
     
     def test_add_multiple_comments(self):
-        """Test adding multiple comments to the same product"""
-        # Add first comment
         data1 = {
             'product_id': self.product.id,
             'telegram_id': 123456789,
@@ -94,7 +82,6 @@ class ProductCommentViewTestCase(APITestCase):
         response1 = self.client.post(url, data1, format='json')
         self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
         
-        # Add second comment
         data2 = {
             'product_id': self.product.id,
             'telegram_id': 123456789,

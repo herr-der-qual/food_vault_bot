@@ -1,14 +1,11 @@
-import json
-from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APITestCase
 from rest_framework import status
-from rest_framework.views import APIView
+from rest_framework.test import APITestCase
 
-from ...models.product import Product
 from ...models.category import Category
-from ...models.user import User, UserGroup
 from ...models.flavor import Flavor
+from ...models.product import Product
+from ...models.user import User, UserGroup
 
 
 class CreateProductTestCase(APITestCase):
@@ -29,10 +26,7 @@ class CreateProductTestCase(APITestCase):
 
 
 class ProductViewTestCase(APITestCase):
-    """Test cases for ProductView API endpoints"""
-
     def setUp(self):
-        """Set up test data"""
         self.category = Category.objects.create(name="Energy Drink")
         self.user = User.objects.create(telegram_id=123456789, username="testuser")
         self.flavor = Flavor.objects.create(name="Original")
@@ -48,7 +42,6 @@ class ProductViewTestCase(APITestCase):
         }
 
     def test_create_product_success(self):
-        """Test successful product creation"""
         url = reverse('product-list')
         response = self.client.post(url, self.product_data, format='json')
 
@@ -63,7 +56,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(product.groups.count(), 2)
 
     def test_create_product_missing_category(self):
-        """Test product creation with missing category"""
         data = self.product_data.copy()
         del data['category']
 
@@ -74,7 +66,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(Product.objects.count(), 0)
 
     def test_create_product_missing_telegram_id(self):
-        """Test product creation with missing telegram_id"""
         data = self.product_data.copy()
         del data['telegram_id']
 
@@ -85,7 +76,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(Product.objects.count(), 0)
 
     def test_create_product_auto_create_related_objects(self):
-        """Test that related objects are auto-created"""
         data = {
             'category': 'New Category',
             'variant': 'New Variant',
@@ -99,14 +89,12 @@ class ProductViewTestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # Check that new objects were created
         self.assertTrue(Category.objects.filter(name='New Category').exists())
         self.assertTrue(Flavor.objects.filter(name='New Flavor').exists())
         self.assertTrue(UserGroup.objects.filter(name='New Group').exists())
         self.assertTrue(User.objects.filter(telegram_id=987654321).exists())
 
     def test_get_products_empty(self):
-        """Test getting products when none exist"""
         url = reverse('product-list')
         response = self.client.get(url)
 
@@ -114,8 +102,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(len(response.data), 0)
 
     def test_get_products_with_data(self):
-        """Test getting products with existing data"""
-        # Create a product
         product = Product.objects.create(
             category=self.category,
             user=self.user,
@@ -137,8 +123,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(len(product_data['groups']), 1)
 
     def test_get_products_filter_by_category(self):
-        """Test filtering products by category"""
-        # Create products with different categories
         category2 = Category.objects.create(name="Soda")
         product1 = Product.objects.create(category=self.category, user=self.user, variant="Energy")
         product2 = Product.objects.create(category=category2, user=self.user, variant="Soda")
@@ -151,8 +135,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(response.data[0]['variant'], 'Energy')
 
     def test_get_products_filter_by_group(self):
-        """Test filtering products by group"""
-        # Create products with different groups
         group2 = UserGroup.objects.create(name="Work")
         product1 = Product.objects.create(category=self.category, user=self.user, variant="Product1")
         product2 = Product.objects.create(category=self.category, user=self.user, variant="Product2")
@@ -168,8 +150,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(response.data[0]['variant'], 'Product1')
 
     def test_update_product_success(self):
-        """Test successful product update"""
-        # Create a product first
         product = Product.objects.create(
             category=self.category,
             user=self.user,
@@ -188,7 +168,6 @@ class ProductViewTestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Refresh from database
         product.refresh_from_db()
         self.assertEqual(product.category.name, 'Updated Category')
         self.assertEqual(product.variant, 'Updated Variant')
@@ -196,7 +175,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(product.groups.count(), 1)
 
     def test_update_product_not_found(self):
-        """Test updating non-existent product"""
         update_data = {'variant': 'Updated Variant'}
 
         url = reverse('product-detail', kwargs={'product_id': 999})
@@ -205,7 +183,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_product_success(self):
-        """Test successful product deletion"""
         product = Product.objects.create(
             category=self.category,
             user=self.user,
@@ -219,7 +196,6 @@ class ProductViewTestCase(APITestCase):
         self.assertEqual(Product.objects.count(), 0)
 
     def test_delete_product_not_found(self):
-        """Test deleting non-existent product"""
         url = reverse('product-detail', kwargs={'product_id': 999})
         response = self.client.delete(url)
 
