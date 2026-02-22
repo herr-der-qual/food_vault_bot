@@ -21,11 +21,6 @@ INSTALLED_APPS = [
     'bot',
 ]
 
-if DEBUG:
-    INSTALLED_APPS += [
-        'e2e',
-    ]
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
