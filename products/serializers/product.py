@@ -26,13 +26,13 @@ class ProductSerializer(serializers.ModelSerializer):
     """Serializer for creating and updating products with related objects"""
     category = serializers.CharField()
     flavors = serializers.ListField(
-        child=serializers.CharField(), 
-        required=False, 
+        child=serializers.CharField(allow_blank=True),
+        required=False,
         allow_empty=True
     )
     groups = serializers.ListField(
-        child=serializers.CharField(), 
-        required=False, 
+        child=serializers.CharField(allow_blank=True),
+        required=False,
         allow_empty=True
     )
     telegram_id = serializers.IntegerField()

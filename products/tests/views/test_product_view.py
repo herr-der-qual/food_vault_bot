@@ -1,3 +1,5 @@
+import unittest
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -10,17 +12,71 @@ from ...models.user import User, UserGroup
 
 class CreateProductTestCase(APITestCase):
     def setUp(self):
-        pass
+        self.url = reverse('product-list')
+        self.full_data = {
+            'category': 'Energy Drink',
+            'variant': 'Monster Ultra',
+            'telegram_id': 111111111,
+            'username': 'arina',
+            'flavors': ['Watermelon', 'Original'],
+            'groups': ['Family'],
+            'ratings': [
+                {'telegram_id': 111111111, 'rating': 4},
+                {'telegram_id': 222222222, 'rating': 3},
+            ],
+            'comments': [
+                {'telegram_id': 111111111, 'comment': 'Pretty good'},
+                {'telegram_id': 222222222, 'comment': 'Too sweet'},
+            ],
+        }
 
     def test_success(self):
-        pass
+        response = self.client.post(self.url, self.full_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        product = Product.objects.first()
+        self.assertEqual(product.category.name, 'Energy Drink')
+        self.assertEqual(product.variant, 'Monster Ultra')
+        self.assertEqual(product.user.telegram_id, 111111111)
+        self.assertEqual(product.flavors.count(), 2)
+        self.assertEqual(product.groups.count(), 1)
+        self.assertEqual(product.ratings.count(), 2)
+        self.assertEqual(product.comments.count(), 2)
 
     def test_success__missing_non_required_fields(self):
-        pass
+        data = {
+            'category': 'Energy Drink',
+            'telegram_id': 111111111,
+        }
+
+        response = self.client.post(self.url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        product = Product.objects.first()
+        self.assertEqual(product.variant, '')
+        self.assertEqual(product.flavors.count(), 0)
+        self.assertEqual(product.groups.count(), 0)
+        self.assertEqual(product.ratings.count(), 0)
+        self.assertEqual(product.comments.count(), 0)
 
     def test_failure__missing_required_fields(self):
-        pass
+        # missing: category
+        response = self.client.post(self.url, {'telegram_id': 111111111}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('category', response.data)
 
+        # missing: telegram_id
+        response = self.client.post(self.url, {'category': 'Energy Drink'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('telegram_id', response.data)
+
+        # missing: category, telegram_id
+        response = self.client.post(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(Product.objects.count(), 0)
+
+    @unittest.skip("Access control not implemented — API uses AllowAny permission")
     def test_failure__access_denied(self):
         pass
 
