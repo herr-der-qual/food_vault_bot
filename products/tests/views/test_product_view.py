@@ -43,6 +43,50 @@ class CreateProductTestCase(APITestCase):
         self.assertEqual(product.ratings.count(), 2)
         self.assertEqual(product.comments.count(), 2)
 
+    def test_success__ratings_only(self):
+        data = {
+            'category': 'Energy Drink',
+            'telegram_id': 111111111,
+            'ratings': [{'telegram_id': 111111111, 'rating': 5}],
+        }
+
+        response = self.client.post(self.url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['ratings'][0]['value'], 5)
+        product = Product.objects.first()
+        self.assertEqual(product.ratings.count(), 1)
+        self.assertEqual(product.comments.count(), 0)
+
+    def test_success__comments_only(self):
+        data = {
+            'category': 'Energy Drink',
+            'telegram_id': 111111111,
+            'comments': [{'telegram_id': 111111111, 'comment': 'Nice'}],
+        }
+
+        response = self.client.post(self.url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['comments'][0]['text'], 'Nice')
+        product = Product.objects.first()
+        self.assertEqual(product.ratings.count(), 0)
+        self.assertEqual(product.comments.count(), 1)
+
+    def test_success__same_category_not_duplicated(self):
+        Category.objects.create(name='Energy Drink')
+
+        self.client.post(self.url, self.full_data, format='json')
+
+        self.assertEqual(Category.objects.filter(name='Energy Drink').count(), 1)
+
+    def test_success__same_user_not_duplicated(self):
+        User.objects.create(telegram_id=111111111, username='old_name')
+
+        self.client.post(self.url, self.full_data, format='json')
+
+        self.assertEqual(User.objects.filter(telegram_id=111111111).count(), 1)
+
     def test_success__missing_non_required_fields(self):
         data = {
             'category': 'Energy Drink',
