@@ -15,7 +15,7 @@ class CreateProductTestCase(APITestCase):
         self.url = reverse('product-list')
         self.full_data = {
             'category': 'Energy Drink',
-            'variant': 'Monster Ultra',
+            'variant': 'Ultra Watermelon',
             'telegram_id': 111111111,
             'username': 'arina',
             'flavors': ['Watermelon', 'Original'],
@@ -36,7 +36,7 @@ class CreateProductTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         product = Product.objects.first()
         self.assertEqual(product.category.name, 'Energy Drink')
-        self.assertEqual(product.variant, 'Monster Ultra')
+        self.assertEqual(product.variant, 'Ultra Watermelon')
         self.assertEqual(product.user.telegram_id, 111111111)
         self.assertEqual(product.flavors.count(), 2)
         self.assertEqual(product.groups.count(), 1)
