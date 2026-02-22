@@ -4,6 +4,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from ...models.brand import Brand
 from ...models.category import Category
 from ...models.flavor import Flavor
 from ...models.product import Product
@@ -15,6 +16,7 @@ class CreateProductTestCase(APITestCase):
         self.url = reverse('product-list')
         self.full_data = {
             'category': 'Energy Drink',
+            'brand': 'Monster',
             'variant': 'Ultra Watermelon',
             'telegram_id': 111111111,
             'username': 'arina',
@@ -36,6 +38,7 @@ class CreateProductTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         product = Product.objects.first()
         self.assertEqual(product.category.name, 'Energy Drink')
+        self.assertEqual(product.brand.name, 'Monster')
         self.assertEqual(product.variant, 'Ultra Watermelon')
         self.assertEqual(product.user.telegram_id, 111111111)
         self.assertEqual(product.flavors.count(), 2)
@@ -80,6 +83,13 @@ class CreateProductTestCase(APITestCase):
 
         self.assertEqual(Category.objects.filter(name='Energy Drink').count(), 1)
 
+    def test_success__same_brand_not_duplicated(self):
+        Brand.objects.create(name='Monster')
+
+        self.client.post(self.url, self.full_data, format='json')
+
+        self.assertEqual(Brand.objects.filter(name='Monster').count(), 1)
+
     def test_success__same_user_not_duplicated(self):
         User.objects.create(telegram_id=111111111, username='old_name')
 
@@ -97,6 +107,7 @@ class CreateProductTestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         product = Product.objects.first()
+        self.assertIsNone(product.brand)
         self.assertEqual(product.variant, '')
         self.assertEqual(product.flavors.count(), 0)
         self.assertEqual(product.groups.count(), 0)

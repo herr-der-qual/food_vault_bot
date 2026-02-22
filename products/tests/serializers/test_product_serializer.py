@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+from ...models.brand import Brand
 from ...models.category import Category
 from ...models.flavor import Flavor
 from ...models.product import Product
@@ -11,6 +12,7 @@ class ProductSerializerCreateValidationTestCase(TestCase):
     def setUp(self):
         self.valid_data = {
             'category': 'Energy Drink',
+            'brand': 'Monster',
             'variant': 'Monster Ultra',
             'telegram_id': 111111111,
             'username': 'arina',
@@ -72,6 +74,7 @@ class ProductSerializerCreateTestCase(TestCase):
     def setUp(self):
         self.valid_data = {
             'category': 'Energy Drink',
+            'brand': 'Monster',
             'variant': 'Monster Ultra',
             'telegram_id': 111111111,
             'username': 'arina',
@@ -96,6 +99,7 @@ class ProductSerializerCreateTestCase(TestCase):
         product = self._save(self.valid_data)
 
         self.assertEqual(product.category.name, 'Energy Drink')
+        self.assertEqual(product.brand.name, 'Monster')
         self.assertEqual(product.variant, 'Monster Ultra')
         self.assertEqual(product.user.telegram_id, 111111111)
         self.assertEqual(product.flavors.count(), 2)
@@ -109,6 +113,21 @@ class ProductSerializerCreateTestCase(TestCase):
         self._save(self.valid_data)
 
         self.assertEqual(Category.objects.filter(name='Energy Drink').count(), 1)
+
+    def test_create__reuses_existing_brand(self):
+        Brand.objects.create(name='Monster')
+
+        self._save(self.valid_data)
+
+        self.assertEqual(Brand.objects.filter(name='Monster').count(), 1)
+
+    def test_create__without_brand__brand_is_null(self):
+        data = {**self.valid_data}
+        del data['brand']
+
+        product = self._save(data)
+
+        self.assertIsNone(product.brand)
 
     def test_create__reuses_existing_user(self):
         User.objects.create(telegram_id=111111111, username='old_name')
@@ -153,6 +172,11 @@ class ProductSerializerUpdateTestCase(TestCase):
         product = self._update({'category': 'Soda'})
 
         self.assertEqual(product.category.name, 'Soda')
+
+    def test_update__changes_brand(self):
+        product = self._update({'brand': 'Pepsi'})
+
+        self.assertEqual(product.brand.name, 'Pepsi')
 
     def test_update__replaces_flavors(self):
         product = self._update({'flavors': ['Cola', 'Lemon']})

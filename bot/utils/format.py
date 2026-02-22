@@ -3,7 +3,7 @@ def format_product(product):
 
     text = (
         f"Category: {product['category']}\n"
-        f"Brand: {product['product']}\n"
+        f"Brand: {product['brand']}\n"
         f"Variant: {variant}\n"
         f"Flavor: {product['flavor']}\n"
         "\n"

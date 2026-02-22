@@ -2,7 +2,7 @@ import asyncio
 
 from bot.create_bot import bot, dp
 from bot.handlers.category import router as categories_router
-from bot.handlers.product import router as product_router
+from bot.handlers.brand import router as brand_router
 from bot.handlers.comment import router as comments_router
 from bot.handlers.finish import router as finish_router
 from bot.handlers.flavor import router as flavors_router
@@ -15,7 +15,7 @@ from bot.handlers.debug import router as debug_router
 def register_routers():
     dp.include_router(start_router)
     dp.include_router(categories_router)
-    dp.include_router(product_router)
+    dp.include_router(brand_router)
     dp.include_router(variants_router)
     dp.include_router(flavors_router)
     dp.include_router(ratings_router)

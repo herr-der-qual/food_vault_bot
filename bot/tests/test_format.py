@@ -6,7 +6,7 @@ from bot.utils.format import format_product
 def test_format_product_full_data():
     product = {
         'category': 'Coffee',
-        'product': 'Nescafe',
+        'brand': 'Nescafe',
         'variant': 'Espresso',
         'flavor': 'Caramel',
         'rating_arina': 8,
@@ -32,7 +32,7 @@ def test_format_product_full_data():
 def test_format_product_no_variant():
     product = {
         'category': 'Tea',
-        'product': 'Lipton',
+        'brand': 'Lipton',
         'flavor': 'Green',
         'rating_arina': 6,
         'comment_arina': None,
@@ -57,7 +57,7 @@ def test_format_product_no_variant():
 def test_format_product_no_comments():
     product = {
         'category': 'Juice',
-        'product': 'Tropicana',
+        'brand': 'Tropicana',
         'variant': 'Fresh',
         'flavor': 'Orange',
         'rating_arina': 9,
@@ -81,7 +81,7 @@ def test_format_product_no_comments():
 def test_format_product_empty_string_comment():
     product = {
         'category': 'Coffee',
-        'product': 'Nescafe',
+        'brand': 'Nescafe',
         'flavor': 'Caramel',
         'rating_arina': 8,
         'comment_arina': '',
@@ -97,7 +97,7 @@ def test_format_product_empty_string_comment():
 def test_format_product_rating_boundary_min():
     product = {
         'category': 'Juice',
-        'product': 'Tropicana',
+        'brand': 'Tropicana',
         'flavor': 'Orange',
         'rating_arina': 1,
         'rating_andrew': 1,
@@ -110,7 +110,7 @@ def test_format_product_rating_boundary_min():
 def test_format_product_rating_boundary_max():
     product = {
         'category': 'Juice',
-        'product': 'Tropicana',
+        'brand': 'Tropicana',
         'flavor': 'Orange',
         'rating_arina': 10,
         'rating_andrew': 10,
@@ -122,7 +122,7 @@ def test_format_product_rating_boundary_max():
 
 def test_format_product_missing_category():
     product = {
-        'product': 'Nescafe',
+        'brand': 'Nescafe',
         'variant': 'Espresso',
         'flavor': 'Caramel',
         'rating_arina': 8,
@@ -134,7 +134,7 @@ def test_format_product_missing_category():
         format_product(product)
 
 
-def test_format_product_missing_product():
+def test_format_product_missing_brand():
     product = {
         'category': 'Coffee',
         'variant': 'Espresso',
@@ -142,14 +142,14 @@ def test_format_product_missing_product():
         'rating_arina': 8,
         'rating_andrew': 7,
     }
-    with pytest.raises(KeyError, match="'product'"):
+    with pytest.raises(KeyError, match="'brand'"):
         format_product(product)
 
 
 def test_format_product_missing_flavor():
     product = {
         'category': 'Coffee',
-        'product': 'Nescafe',
+        'brand': 'Nescafe',
         'variant': 'Espresso',
         'rating_arina': 8,
         'comment_arina': 'Smooth taste',
@@ -163,7 +163,7 @@ def test_format_product_missing_flavor():
 def test_format_product_missing_ratings():
     product = {
         'category': 'Coffee',
-        'product': 'Nescafe',
+        'brand': 'Nescafe',
         'variant': 'Espresso',
         'flavor': 'Caramel',
         'comment_arina': 'Smooth taste',

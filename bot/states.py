@@ -15,7 +15,7 @@ class States(AiogramStatesGroup):
         'text': 'Select or create category:',
         'keyboard': category_keyboard()
     })
-    product = State({
+    brand = State({
         'text': 'Enter brand:',
         'keyboard': navigation_keyboard()(
             navigation={
@@ -28,7 +28,7 @@ class States(AiogramStatesGroup):
         'keyboard': navigation_keyboard()(
             navigation={
                 'skip': 'go.to.flavor',
-                'back': 'go.to.product'
+                'back': 'go.to.brand'
             },
         )
     })

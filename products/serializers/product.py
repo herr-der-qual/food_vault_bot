@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from ..models.product import Product
 from ..models.user import User, UserGroup
+from ..models.brand import Brand
 from ..models.category import Category
 from ..models.flavor import Flavor
 from .rating import RatingSerializer
@@ -14,6 +15,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     ratings = RatingSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
     category = serializers.StringRelatedField(read_only=True)
+    brand = serializers.StringRelatedField(read_only=True)
     flavors = serializers.StringRelatedField(many=True, read_only=True)
     groups = serializers.StringRelatedField(many=True, read_only=True)
 
@@ -25,6 +27,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     """Serializer for creating and updating products with related objects"""
     category = serializers.CharField()
+    brand = serializers.CharField(required=False, allow_blank=True)
     flavors = serializers.ListField(
         child=serializers.CharField(allow_blank=True),
         required=False,
@@ -48,7 +51,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'category', 'variant', 'telegram_id', 'username',
+            'category', 'brand', 'variant', 'telegram_id', 'username',
             'flavors', 'groups', 'ratings', 'comments'
         ]
 
@@ -66,6 +69,7 @@ class ProductSerializer(serializers.ModelSerializer):
         """Create product with related objects"""
         # Extract related data
         category_name = validated_data.pop('category')
+        brand_name = validated_data.pop('brand', None)
         telegram_id = validated_data.pop('telegram_id')
         username = validated_data.pop('username', '')
         flavor_names = validated_data.pop('flavors', [])
@@ -76,6 +80,11 @@ class ProductSerializer(serializers.ModelSerializer):
         # Get or create category
         category, _ = Category.objects.get_or_create(name=category_name)
 
+        # Get or create brand if provided
+        brand = None
+        if brand_name:
+            brand, _ = Brand.objects.get_or_create(name=brand_name)
+
         # Get or create user
         user, _ = User.objects.get_or_create(
             telegram_id=telegram_id,
@@ -85,6 +94,7 @@ class ProductSerializer(serializers.ModelSerializer):
         # Create product
         product = Product.objects.create(
             category=category,
+            brand=brand,
             user=user,
             **validated_data
         )
@@ -141,9 +151,10 @@ class ProductSerializer(serializers.ModelSerializer):
         """Update product with related objects"""
         # Extract related data
         category_name = validated_data.pop('category', None)
+        brand_name = validated_data.pop('brand', None)
         flavor_names = validated_data.pop('flavors', None)
         group_names = validated_data.pop('groups', None)
-        
+
         # Remove fields that shouldn't be updated directly
         validated_data.pop('telegram_id', None)
         validated_data.pop('username', None)
@@ -152,6 +163,11 @@ class ProductSerializer(serializers.ModelSerializer):
         if category_name is not None:
             category, _ = Category.objects.get_or_create(name=category_name)
             instance.category = category
+
+        # Update brand if provided
+        if brand_name is not None:
+            brand, _ = Brand.objects.get_or_create(name=brand_name)
+            instance.brand = brand
 
         # Update flavors if provided
         if flavor_names is not None:
